@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 6302661584938317768}
   - component: {fileID: 1330204133745943413}
   - component: {fileID: 1592956014664240332}
+  - component: {fileID: 2253281069771896448}
   m_Layer: 0
   m_Name: PhraseButtonPrefab
   m_TagString: Untagged
@@ -56,6 +57,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   textLabel: {fileID: 4509030899245128792}
   button: {fileID: 6302661584938317768}
+  fadeDuration: 0.6
 --- !u!222 &3068504434400637421
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -136,6 +138,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.ContentSizeFitter
   m_HorizontalFit: 0
   m_VerticalFit: 0
+--- !u!225 &2253281069771896448
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2135525254437508485}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &4352080073684229610
 GameObject:
   m_ObjectHideFlags: 0

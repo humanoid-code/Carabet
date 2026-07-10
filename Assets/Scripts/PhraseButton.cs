@@ -2,20 +2,24 @@ using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using DG.Tweening;
 
 public class PhraseButton : MonoBehaviour
 {
     [SerializeField] private TMP_Text textLabel;
     [SerializeField] private Button button;
+    [SerializeField] private float fadeDuration;
     private MinigameManager gameManager;
 
     public int Index { get; private set; }
 
     public event Action<PhraseButton> OnPressed;
+    private CanvasGroup canvasGroup;
 
     private void Awake()
     {
         button.onClick.AddListener(HandleClick);
+        canvasGroup = GetComponent<CanvasGroup>();
     }
 
     private void OnDestroy()
@@ -32,7 +36,11 @@ public class PhraseButton : MonoBehaviour
 
     public void Hide()
     {
-        Destroy(gameObject);
+        transform.DOScale(Vector3.zero, fadeDuration - 0.1f).SetEase(Ease.InBack);
+        if (canvasGroup != null)
+        {
+            canvasGroup.DOFade(0f, fadeDuration - 0.1f).OnComplete(() => gameObject.SetActive(false));
+        }
     }
 
     private void HandleClick()
