@@ -1,21 +1,27 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class MinigameManager : MonoBehaviour
 {
     [Header("References")]
     [Tooltip("Ссылка на объект, который создает кнопки ВНУТРИ Canvas")]
     [SerializeField] private ButtonSpawner buttonSpawner; 
+    [SerializeField] private string testPhrase;
+    [SerializeField] private int testPieces;
+    [SerializeField] private float testSpeed;
+    [SerializeField] private Slider timeSlider;
+    [SerializeField] private float totalTime = 10f;       // Можно менять в инспекторе или передавать в StartGame
+    
+    private float timeLeft;     
+    public event Action OnGameFinished;      // Победа (собрали все слова)
+    public event Action<string> OnWrongAnswer;// Ошибка
+    public event Action OnTimeOut;            // Проигрыш (время вышло)
 
     private List<string> pieces;
-    // private List<PhraseButton> buttons; <-- УДАЛИТЬ, теперь этим занимается Spawner
     private int currentCorrectIndex;
     private bool gameRunning;
-    private float moveSpeed;
-
-    public event Action OnGameFinished;
-    public event Action<string> OnWrongAnswer;
 
     void Start()
     {
@@ -23,7 +29,49 @@ public class MinigameManager : MonoBehaviour
         {
             Debug.LogError("Ошибка: Не назначен ButtonSpawner! Найди его в Canvas.");
         }
-        StartGame("Мы дадим вам деньги завтра", 3, 100.0f);
+                if (timeSlider == null)
+        {
+            Debug.LogError("Ошибка: Не назначен Time Slider в инспекторе!");
+        }
+        else
+        {
+            // Инициализируем полосу на максимум
+            timeSlider.value = 1f; 
+            timeSlider.interactable = false; // Чтобы игрок не мог двигать ползунок мышкой
+        }
+        StartGame(testPhrase, testPieces, testSpeed);
+    }
+
+    void Update()
+    {
+        if (!gameRunning) return;
+
+        // --- ЛОГИКА ТАЙМЕРА ---
+        timeLeft -= Time.deltaTime;
+
+        // Обновляем полосу (от 1 до 0)
+        if (timeSlider != null)
+        {
+            float normalizedTime = Mathf.Max(0, timeLeft / this.totalTime);
+            timeSlider.value = normalizedTime;
+            
+            // Меняем цвет полосы, если мало времени (опционально, красный)
+            if (normalizedTime < 0.3f && timeSlider.fillRect != null)
+            {
+                timeSlider.fillRect.GetComponent<Image>().color = Color.red;
+            }
+            else if (timeSlider.fillRect != null)
+            {
+                // Возвращаем белый/стандартный цвет
+                timeSlider.fillRect.GetComponent<Image>().color = Color.white; 
+            }
+        }
+
+        // Проверка на истечение времени
+        if (timeLeft <= 0f)
+        {
+            TimeOut();
+        }
     }
 
     public static List<string> Split(string phrase, int piecesCount)
@@ -84,22 +132,30 @@ public class MinigameManager : MonoBehaviour
         return charResult;
     }
 
-    public void StartGame(string phrase, int piecesCount, float moveSpeed)
+    public void StartGame(string phrase, int piecesCount, float moveSpeed, float? customTime = null)
     {
-        this.moveSpeed = moveSpeed;
         gameRunning = true;
         currentCorrectIndex = 0;
         
+        float gameTime = customTime ?? this.totalTime;
+        this.totalTime = gameTime;
+        timeLeft = gameTime;
         pieces = Split(phrase, piecesCount);
 
-        // ГЛАВНОЕ ИЗМЕНЕНИЕ:
-        // Мы НЕ создаем кнопки здесь. Мы просто говорим спавнеру: "Сделай их".
-        if(buttonSpawner != null)
+
+        if (buttonSpawner != null)
         {
-            buttonSpawner.SpawnButtons(pieces, moveSpeed); // Передаем скорость движения кнопок
+            var createdButtons = buttonSpawner.SpawnButtons(pieces, moveSpeed); 
+            // ВАЖНО: SpawnButtons должен возвращать List<PhraseButton>, см. пункт 3!
+    
+            ButtonDisposer disposer = GetComponent<ButtonDisposer>();
+            if(disposer != null) disposer.RegisterButtons(createdButtons);
         }
 
-        Debug.Log($"Игра началась. Ждем нажатий...");
+        Debug.Log($"Игра началась! Время: {timeLeft} сек.");
+        
+        // Сбрасываем полосу времени
+        if(timeSlider != null) timeSlider.value = 1f;
     }
 
     public void HandleButtonPress(PhraseButton pressedButton)
@@ -145,6 +201,22 @@ public class MinigameManager : MonoBehaviour
     {
         gameRunning = false;
         Debug.Log("Мини-игра окончена! Победа.");
+        Destroy(timeSlider.gameObject);
         OnGameFinished?.Invoke();
+    }
+
+    private void TimeOut()
+    {
+        gameRunning = false;
+        Debug.Log("Время вышло! ПРОИГРЫШ.");
+        
+        ButtonDisposer disposer = GetComponent<ButtonDisposer>();
+        if (disposer != null) 
+        {
+            disposer.DestroyAllButtons();
+        }
+        Destroy(timeSlider.gameObject);
+        
+        OnTimeOut?.Invoke();
     }
 }

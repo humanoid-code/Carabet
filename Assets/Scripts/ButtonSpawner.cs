@@ -9,7 +9,7 @@ public class ButtonSpawner : MonoBehaviour
 
     [SerializeField] MinigameManager targetManager;
     // Метод, который вызывает MinigameManager, когда нужно создать кнопки
-    public void SpawnButtons(List<string> pieces, float gameSpeed)
+    public List<PhraseButton> SpawnButtons(List<string> pieces, float gameSpeed)
     {
         // Очищаем старые
         foreach (var btn in activeButtons)
@@ -44,6 +44,7 @@ public class ButtonSpawner : MonoBehaviour
             RectTransform rect = newBtnObj.GetComponent<RectTransform>();
             if(rect != null) rect.anchoredPosition = new Vector2(posX, posY);
         }
+        return activeButtons; 
     }
 
     // Метод для очистки, если игра закончилась
