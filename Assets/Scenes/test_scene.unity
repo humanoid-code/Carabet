@@ -383,6 +383,13 @@ MonoBehaviour:
   m_PixelsPerUnitMultiplier: 1
 --- !u!222 &1179612126
 CanvasRenderer:
+  m_EditorClassIdentifier: Assembly-CSharp::DialogueManager
+  inkJsonAsset: {fileID: 4900000, guid: 81e4c480ee986a04a887dacda80622f9, type: 3}
+  dialogueText: {fileID: 332211496}
+  choicesContainer: {fileID: 157091639}
+  choiceButtonPrefab: {fileID: 1568812082666000206, guid: 5ea3a95bed87eb843b8ea66e432af6be, type: 3}
+--- !u!4 &1871648782
+Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
