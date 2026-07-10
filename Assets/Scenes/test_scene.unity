@@ -543,7 +543,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dd7c857e41eefd747b1a1687fbafbe1e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DialogueManager
-  inkJsonAsset: {fileID: 4900000, guid: f32c10ff8224dfd4b9af8b051d36f9f6, type: 3}
+  inkJsonAsset: {fileID: 4900000, guid: 81e4c480ee986a04a887dacda80622f9, type: 3}
   dialogueText: {fileID: 332211496}
   choicesContainer: {fileID: 157091639}
   choiceButtonPrefab: {fileID: 1568812082666000206, guid: 5ea3a95bed87eb843b8ea66e432af6be, type: 3}
