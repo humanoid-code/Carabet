@@ -566,6 +566,30 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 22777753726846343, guid: 0534abbcd623cc047b342c33bb7a109e, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2169995249712124338, guid: 0534abbcd623cc047b342c33bb7a109e, type: 3}
+      propertyPath: m_UiScaleMode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2169995249712124338, guid: 0534abbcd623cc047b342c33bb7a109e, type: 3}
+      propertyPath: m_ScreenMatchMode
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2169995249712124338, guid: 0534abbcd623cc047b342c33bb7a109e, type: 3}
+      propertyPath: m_MatchWidthOrHeight
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2169995249712124338, guid: 0534abbcd623cc047b342c33bb7a109e, type: 3}
+      propertyPath: m_ReferenceResolution.x
+      value: 3840
+      objectReference: {fileID: 0}
+    - target: {fileID: 2169995249712124338, guid: 0534abbcd623cc047b342c33bb7a109e, type: 3}
+      propertyPath: m_ReferenceResolution.y
+      value: 2160
+      objectReference: {fileID: 0}
     - target: {fileID: 3062974156420838826, guid: 0534abbcd623cc047b342c33bb7a109e, type: 3}
       propertyPath: m_IsActive
       value: 1
@@ -582,6 +606,10 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 699788205}
+    - target: {fileID: 3967144675165127508, guid: 0534abbcd623cc047b342c33bb7a109e, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4329987244285182219, guid: 0534abbcd623cc047b342c33bb7a109e, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
@@ -626,9 +654,33 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 800
       objectReference: {fileID: 0}
+    - target: {fileID: 6248660256794590861, guid: 0534abbcd623cc047b342c33bb7a109e, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6349142976158960276, guid: 0534abbcd623cc047b342c33bb7a109e, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6349142976158960276, guid: 0534abbcd623cc047b342c33bb7a109e, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6349142976158960276, guid: 0534abbcd623cc047b342c33bb7a109e, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6349142976158960276, guid: 0534abbcd623cc047b342c33bb7a109e, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6926197518534450695, guid: 0534abbcd623cc047b342c33bb7a109e, type: 3}
       propertyPath: m_Name
       value: Canvas
+      objectReference: {fileID: 0}
+    - target: {fileID: 6926197518534450695, guid: 0534abbcd623cc047b342c33bb7a109e, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7168228469587372422, guid: 0534abbcd623cc047b342c33bb7a109e, type: 3}
       propertyPath: m_Pivot.x
@@ -710,6 +762,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8108232411449548131, guid: 0534abbcd623cc047b342c33bb7a109e, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8523105912053967381, guid: 0534abbcd623cc047b342c33bb7a109e, type: 3}
       propertyPath: m_Color.b
       value: 0.051975645
@@ -721,6 +777,10 @@ PrefabInstance:
     - target: {fileID: 8523105912053967381, guid: 0534abbcd623cc047b342c33bb7a109e, type: 3}
       propertyPath: m_Color.r
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8669428166669846484, guid: 0534abbcd623cc047b342c33bb7a109e, type: 3}
+      propertyPath: m_VertexColorAlwaysGammaSpace
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects:
