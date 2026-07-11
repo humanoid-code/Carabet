@@ -4,13 +4,19 @@ using UnityEngine;
 public class ButtonSpawner : MonoBehaviour
 {
     [SerializeField] private GameObject phraseButtonPrefab;
-    
     private List<PhraseButton> activeButtons = new List<PhraseButton>();
 
-    [SerializeField] MinigameManager targetManager;
-    // Метод, который вызывает MinigameManager, когда нужно создать кнопки
-    public List<PhraseButton> SpawnButtons(List<string> pieces, float gameSpeed)
+    // Убрали [SerializeField] MinigameManager targetManager; — он больше не нужен!
+
+    // ТЕПЕРЬ МЕТОД ПРИНИМАЕТ ССЫЛКУ НА ВЫЗВАВШИЙ ЕГО МЕНЕДЖЕР (MinigameManager manager)
+    public List<PhraseButton> SpawnButtons(List<string> pieces, float gameSpeed, MinigameManager manager)
     {
+        if (phraseButtonPrefab == null)
+        {
+            Debug.LogError($"[БЕДА] На объекте {gameObject.name} в скрипте ButtonSpawner НЕ ЗАДАН префаб кнопки!", this);
+            return new List<PhraseButton>();
+        }
+
         // Очищаем старые
         foreach (var btn in activeButtons)
         {
@@ -20,16 +26,18 @@ public class ButtonSpawner : MonoBehaviour
 
         for (int i = 0; i < pieces.Count; i++)
         {
-            GameObject newBtnObj = Instantiate(phraseButtonPrefab, transform); // Родитель - сам Holder
+            GameObject newBtnObj = Instantiate(phraseButtonPrefab, transform);
             PhraseButton newBtn = newBtnObj.GetComponent<PhraseButton>();
-            
+
             if (newBtn == null) continue;
 
-            newBtn.Initialize(pieces[i], i, targetManager); 
+            // Передаем manager напрямую из параметров метода!
+            newBtn.Initialize(pieces[i], i, manager);
+
             MovingPhraseButton mover = newBtnObj.GetComponent<MovingPhraseButton>();
             if (mover != null)
             {
-                mover.SetSpeed(gameSpeed); // ВОТ ЗДЕСЬ ЗАДАЕТСЯ СКОРОСТЬ
+                mover.SetSpeed(gameSpeed);
             }
             else
             {
@@ -37,20 +45,19 @@ public class ButtonSpawner : MonoBehaviour
             }
             activeButtons.Add(newBtn);
 
-            // ТВОИ КООРДИНАТЫ
-            float posX = -300f + (250f * i);
-            float posY = -100f;
-            
+            // Спавним все кнопки строго по центру родителя (0, 0)
+            float posX = 0f;
+            float posY = 0f;
+
             RectTransform rect = newBtnObj.GetComponent<RectTransform>();
-            if(rect != null) rect.anchoredPosition = new Vector2(posX, posY);
+            if (rect != null) rect.anchoredPosition = new Vector2(posX, posY);
         }
-        return activeButtons; 
+        return activeButtons;
     }
 
-    // Метод для очистки, если игра закончилась
     public void ClearAll()
     {
-        foreach (var btn in activeButtons) Destroy(btn.gameObject);
+        foreach (var btn in activeButtons) if (btn != null) Destroy(btn.gameObject);
         activeButtons.Clear();
     }
 }

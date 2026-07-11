@@ -3,11 +3,12 @@ using UnityEngine.UI;
 using TMPro;
 using Ink.Runtime;
 using System.Collections.Generic;
+
 [System.Serializable]
 public struct CharacterData
 {
-    public string nameId; // Имя из Ink (manager, LiyoMern, GiyJarum и т.п.)
-    public Sprite sprite; // Картинка персонажа из папки
+    public string nameId;
+    public Sprite sprite;
 }
 
 public class DialogueManager : MonoBehaviour
@@ -27,64 +28,172 @@ public class DialogueManager : MonoBehaviour
     [Header("База картинок персонажей")]
     [SerializeField] private List<CharacterData> charactersList;
 
+    [Header("Менеджеры")]
+    [SerializeField] private MinigameManager minigameManager;
+
+    [Header("Окна")]
+    [SerializeField] private GameObject dialoguePanel;
+
     private GameManager gameManager;
+    private bool ignorePositivesInNextNode = false;
 
     void Start()
     {
         gameManager = FindObjectOfType<GameManager>();
+        RestartDialogueStory();
 
+        if (minigameManager != null)
+        {
+            minigameManager.OnGameFinished += OnMinigameWin;
+            minigameManager.OnTimeOut += OnMinigameLose;
+        }
+    }
+
+    // Метод для полного сброса и старта истории сначала
+    private void RestartDialogueStory()
+    {
         if (inkJsonAsset != null)
         {
             story = new Story(inkJsonAsset.text);
             story.ChoosePathString("start");
+
+            // Сбрасываем статы в GameManager на дефолтные при перезапуске
+            if (gameManager != null)
+            {
+                gameManager.law = 50;
+                gameManager.money = 100;
+                gameManager.workers_wellbeing = 50;
+                gameManager.rating = 1;
+                gameManager.UpdateStatsUI();
+            }
+
             RefreshView();
         }
     }
 
+    // ИГРОК ВЫИГРАЛ: ресурсы начисляются как обычно
+    private void OnMinigameWin()
+    {
+        ignorePositivesInNextNode = false;
+        if (dialoguePanel != null) dialoguePanel.SetActive(true);
+        RefreshView();
+    }
+
+    // ИГРОК ПРОИГРАЛ: включаем игнорирование плюсов
+    private void OnMinigameLose()
+    {
+        ignorePositivesInNextNode = true;
+        if (dialoguePanel != null) dialoguePanel.SetActive(true);
+        RefreshView();
+    }
+
+    private void OnDestroy()
+    {
+        if (minigameManager != null)
+        {
+            minigameManager.OnGameFinished -= OnMinigameWin;
+            minigameManager.OnTimeOut -= OnMinigameLose;
+        }
+    }
+
+    private bool ChoiceGivesPlus(List<string> tags)
+    {
+        if (tags == null || tags.Count == 0) return false;
+
+        foreach (string tag in tags)
+        {
+            string[] splitTag = tag.Split(':');
+            string key = splitTag[0].Trim().ToLower();
+            string value = splitTag.Length > 1 ? splitTag[1].Trim() : "";
+
+            if (key == "money" || key == "law" || key == "rating" || key == "workers_wellbeing")
+            {
+                if (value.StartsWith("+"))
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     void RefreshView()
     {
-        // Удаляем старые кнопки
         foreach (Transform child in choicesContainer) Destroy(child.gameObject);
 
-        // Читаем текст из Ink, пока он не кончится или не упрется в выбор
         string text = "";
         while (story.canContinue)
         {
             text += story.Continue();
-
             HandleTags(story.currentTags);
         }
         dialogueText.text = text;
+        ignorePositivesInNextNode = false;
 
-        // Если есть варианты выбора, то создаем кнопки
         if (story.currentChoices.Count > 0)
         {
             for (int i = 0; i < story.currentChoices.Count; i++)
             {
                 Choice choice = story.currentChoices[i];
                 GameObject button = Instantiate(choiceButtonPrefab, choicesContainer);
-                //Instantiate(1, 2) делает копию префаба (1) в (2)
-                button.GetComponentInChildren<TextMeshProUGUI>().text = choice.text; // текст на кнопке
+                button.GetComponentInChildren<TextMeshProUGUI>().text = choice.text;
 
-                // Назначаем кнопке действие при клике (чоткая короткая запись через лямбду)
-                int index = i; //ОБЯЗАТЕЛЬНО
+                int index = i;
                 button.GetComponent<Button>().onClick.AddListener(() =>
                 {
-                    story.ChooseChoiceIndex(index);
-                    RefreshView();
+                    string chosenPhrase = choice.text;
+                    string sourceKnot = choice.sourcePath;
+                    List<string> choiceTags = choice.tags;
+
+                    // Если нажали "ИГРАТЬ СНАЧАЛА", просто перезапускаем всю историю заново
+                    if (chosenPhrase.Contains("ИГРАТЬ СНАЧАЛА"))
+                    {
+                        RestartDialogueStory();
+                        return;
+                    }
+
+                    // Проверка на запуск мини-игры
+                    if (sourceKnot != null && sourceKnot.ToLower().Contains("dialogue") && ChoiceGivesPlus(choiceTags))
+                    {
+                        Debug.Log($"[DIAG] Выбор дал бонус в {sourceKnot}! Запускаем мини-игру.");
+
+                        if (dialoguePanel != null) dialoguePanel.SetActive(false);
+
+                        story.ChooseChoiceIndex(index);
+
+                        if (minigameManager != null)
+                        {
+                            minigameManager.StartGame(chosenPhrase, 4, 250f);
+                        }
+                    }
+                    else
+                    {
+                        Debug.Log($"[DIAG] Обычный шаг сюжета в {sourceKnot} (мини-игра пропущена).");
+                        story.ChooseChoiceIndex(index);
+                        RefreshView();
+                    }
                 });
             }
         }
     }
 
-    private void HandleTags(System.Collections.Generic.List<string> tags)
+    private void HandleTags(List<string> tags)
     {
         foreach (string tag in tags)
         {
-            // Бьем тег по двоеточию (например, "money:-50" станет ["money", "-50"])
             string[] splitTag = tag.Split(':');
             string key = splitTag[0].Trim();
             string value = splitTag.Length > 1 ? splitTag[1].Trim() : "";
+
+            // ДОБАВИТЬ ЭТОТ BLOCK:
+            if (key == "money" || key == "law" || key == "rating" || key == "workers_wellbeing")
+            {
+                if (ignorePositivesInNextNode && value.StartsWith("+"))
+                {
+                    Debug.Log($"[STATS] Проигрыш! Плюс для '{key}' ({value}) проигнорирован.");
+                    continue; // Переходим к следующему тегу, этот плюс не применится!
+                }
+            }
 
             switch (key)
             {
@@ -96,12 +205,9 @@ public class DialogueManager : MonoBehaviour
                     else
                     {
                         characterSprite.SetActive(true);
-
-                        // Достаем компонент Image из нашего грейбокса
                         Image charImage = characterSprite.GetComponent<Image>();
                         if (charImage != null)
                         {
-                            // Ищем в списке нужный спрайт по имени из Ink
                             Sprite foundSprite = null;
                             foreach (var charData in charactersList)
                             {
@@ -112,69 +218,40 @@ public class DialogueManager : MonoBehaviour
                                 }
                             }
 
-                            // Если нашли картинку — подставляем её!
                             if (foundSprite != null)
                             {
                                 charImage.sprite = foundSprite;
-                                charImage.color = Color.white; // Убираем серость/прозрачность, если была
-                            }
-                            else
-                            {
-                                Debug.LogWarning($"Картинка для персонажа '{value}' не найдена в Characters List!");
+                                charImage.color = Color.white;
                             }
                         }
                     }
                     break;
 
                 case "money":
-                    if (value.StartsWith("="))
-                    {
-                        string cleanValue = value.Substring(1);
-                        gameManager.money = int.Parse(cleanValue);
-                    }
-                    else
-                    {
-                        gameManager.money += int.Parse(value);
-                    }
+                    if (gameManager == null) break;
+                    if (value.StartsWith("=")) gameManager.money = int.Parse(value.Substring(1));
+                    else gameManager.money += int.Parse(value);
                     gameManager.UpdateStatsUI();
                     break;
 
                 case "law":
-                    if (value.StartsWith("="))
-                    {
-                        string cleanValue = value.Substring(1);
-                        gameManager.law = int.Parse(cleanValue);
-                    }
-                    else
-                    {
-                        gameManager.law += int.Parse(value);
-                    }
+                    if (gameManager == null) break;
+                    if (value.StartsWith("=")) gameManager.law = int.Parse(value.Substring(1));
+                    else gameManager.law += int.Parse(value);
                     gameManager.UpdateStatsUI();
                     break;
 
                 case "rating":
-                    if (value.StartsWith("="))
-                    {
-                        string cleanValue = value.Substring(1);
-                        gameManager.rating = int.Parse(cleanValue);
-                    }
-                    else
-                    {
-                        gameManager.rating += int.Parse(value);
-                    }
+                    if (gameManager == null) break;
+                    if (value.StartsWith("=")) gameManager.rating = int.Parse(value.Substring(1));
+                    else gameManager.rating += int.Parse(value);
                     gameManager.UpdateStatsUI();
                     break;
 
                 case "workers_wellbeing":
-                    if (value.StartsWith("="))
-                    {
-                        string cleanValue = value.Substring(1);
-                        gameManager.workers_wellbeing = int.Parse(cleanValue);
-                    }
-                    else
-                    {
-                        gameManager.workers_wellbeing += int.Parse(value);
-                    }
+                    if (gameManager == null) break;
+                    if (value.StartsWith("=")) gameManager.workers_wellbeing = int.Parse(value.Substring(1));
+                    else gameManager.workers_wellbeing += int.Parse(value);
                     gameManager.UpdateStatsUI();
                     break;
             }

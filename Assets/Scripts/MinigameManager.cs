@@ -39,7 +39,6 @@ public class MinigameManager : MonoBehaviour
             timeSlider.value = 1f; 
             timeSlider.interactable = false; // Чтобы игрок не мог двигать ползунок мышкой
         }
-        StartGame(testPhrase, testPieces, testSpeed);
     }
 
     void Update()
@@ -145,7 +144,7 @@ public class MinigameManager : MonoBehaviour
 
         if (buttonSpawner != null)
         {
-            var createdButtons = buttonSpawner.SpawnButtons(pieces, moveSpeed); 
+            var createdButtons = buttonSpawner.SpawnButtons(pieces, moveSpeed, this); 
             // ВАЖНО: SpawnButtons должен возвращать List<PhraseButton>, см. пункт 3!
     
             ButtonDisposer disposer = GetComponent<ButtonDisposer>();
@@ -156,6 +155,7 @@ public class MinigameManager : MonoBehaviour
         
         // Сбрасываем полосу времени
         if(timeSlider != null) timeSlider.value = 1f;
+        if (timeSlider != null) timeSlider.gameObject.SetActive(true);
     }
 
     public void HandleButtonPress(PhraseButton pressedButton)
@@ -201,7 +201,8 @@ public class MinigameManager : MonoBehaviour
     {
         gameRunning = false;
         Debug.Log("Мини-игра окончена! Победа.");
-        Destroy(timeSlider.gameObject);
+
+        if (timeSlider != null) timeSlider.gameObject.SetActive(false); // Прячем вместо удаления
         OnGameFinished?.Invoke();
     }
 
@@ -209,14 +210,15 @@ public class MinigameManager : MonoBehaviour
     {
         gameRunning = false;
         Debug.Log("Время вышло! ПРОИГРЫШ.");
-        
+
         ButtonDisposer disposer = GetComponent<ButtonDisposer>();
-        if (disposer != null) 
+        if (disposer != null)
         {
             disposer.DestroyAllButtons();
         }
-        Destroy(timeSlider.gameObject);
-        
+
+        if (timeSlider != null) timeSlider.gameObject.SetActive(false); // Прячем вместо удаления
+
         OnTimeOut?.Invoke();
     }
 }
