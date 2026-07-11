@@ -47,7 +47,7 @@ public class ButtonSpawner : MonoBehaviour
 
             // Спавним все кнопки строго по центру родителя (0, 0)
             float posX = 0f;
-            float posY = 0f;
+            float posY = -450 + 300 * i;
 
             RectTransform rect = newBtnObj.GetComponent<RectTransform>();
             if (rect != null) rect.anchoredPosition = new Vector2(posX, posY);
