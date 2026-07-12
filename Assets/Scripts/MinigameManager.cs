@@ -10,17 +10,22 @@ public class MinigameManager : MonoBehaviour
     [Tooltip("Ссылка на объект, который создает кнопки ВНУТРИ Canvas")]
     [SerializeField] private ButtonSpawner buttonSpawner; 
     [SerializeField] private string testPhrase;
-    [SerializeField] private int testPieces;
-    [SerializeField] private float testSpeed;
     [SerializeField] private Slider timeSlider;
     [SerializeField] private float totalTime = 10f;
     [SerializeField] private float slotGap = 200f;
+    [SerializeField] private int defaultPieces = 3;
+    [SerializeField] private float defaultVelocity = 200f;
+    [SerializeField] private float multiplierVelocity = 100f;
+    [SerializeField] private int testEasiness = 1;
     
     private float timeLeft;     
     public event Action OnGameFinished;      // Победа (собрали все слова)
     public event Action<string> OnWrongAnswer;// Ошибка
     public event Action OnTimeOut;            // Проигрыш (время вышло)
 
+    
+    int piecesCount;
+    float moveSpeed;
     private List<string> pieces;
     private int currentCorrectIndex;
     private bool gameRunning;
@@ -149,8 +154,14 @@ public class MinigameManager : MonoBehaviour
         return result;
     }
 
-    public void StartGame(string phrase, int piecesCount, float moveSpeed, float? customTime = null)
+    public void StartGame(string phrase, int easiness = -1, float? customTime = null)
     {
+        easiness = testEasiness;
+        if (easiness != -1)
+        {
+            piecesCount = defaultPieces + easiness;
+            moveSpeed = defaultVelocity + multiplierVelocity * easiness;
+        }
         gameRunning = true;
         currentCorrectIndex = 0;
         

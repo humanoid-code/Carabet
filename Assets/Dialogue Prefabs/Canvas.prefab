@@ -438,7 +438,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 1}
   m_AnchorMax: {x: 0.5, y: 1}
   m_AnchoredPosition: {x: 0, y: -50}
-  m_SizeDelta: {x: 400, y: 20}
+  m_SizeDelta: {x: 400, y: 50}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!114 &6446965226812805399
 MonoBehaviour:
@@ -2290,8 +2290,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.25}
   m_AnchorMax: {x: 1, y: 0.75}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: -5}
+  m_SizeDelta: {x: 0, y: -10}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &9067762554242457652
 CanvasRenderer:
@@ -2929,10 +2929,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MinigameManager
   buttonSpawner: {fileID: 5208677823978521484}
   testPhrase: 
-  testPieces: 0
-  testSpeed: 0
   timeSlider: {fileID: 6446965226812805399}
   totalTime: 10
+  slotGap: 200
+  defaultPieces: 3
+  defaultVelocity: 200
+  multiplierVelocity: 100
+  testEasiness: 1
+  targetPanel: {fileID: 0}
+  targetText: {fileID: 0}
 --- !u!1 &8484443309719337691
 GameObject:
   m_ObjectHideFlags: 0
