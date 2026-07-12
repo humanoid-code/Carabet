@@ -14,7 +14,7 @@ public class MinigameManager : MonoBehaviour
     [SerializeField] private float testSpeed;
     [SerializeField] private Slider timeSlider;
     [SerializeField] private float totalTime = 10f;
-    [SerializeField] private float slotGap = 20f;
+    [SerializeField] private float slotGap = 200f;
     
     private float timeLeft;     
     public event Action OnGameFinished;      // Победа (собрали все слова)
@@ -76,56 +76,86 @@ public class MinigameManager : MonoBehaviour
             TimeOut();
         }
     }
-
     private void RenderTargetPhrase(List<string> parts)
     {
-        // Очищаем старые слоты, если была перезагрузка уровня
+        // 1. Чистим старые слоты
         foreach (var slot in targetSlots)
         {
-            if(slot.rectTransform != null) Destroy(slot.rectTransform.gameObject);
+            if (slot.rectTransform != null) Destroy(slot.rectTransform.gameObject);
         }
         targetSlots.Clear();
 
         float currentX = 0f;
-        float panelWidth = targetPanel.rect.width;
         
-        // Центрируем фразу примерно по центру панели
-        float totalWidth = 0;
-        foreach(var part in parts) {
-            // Грубая оценка ширины (можно улучшить через RectTransformUtility)
-            totalWidth += 100f + slotGap; 
-        }
-        currentX = -totalWidth / 2f; 
+        // --- НАСТРОЙКИ РАЗМЕРОВ (поиграй с этими цифрами, если нужно) ---
+        const float slotWidth = 400f;  // Ширина "кармана" для слова
+        const float slotHeight = 140f;  // Высота "кармана"
+        const float gap = 400f;         // Расстояние между словами
+        // -----------------------------------------------------------------
+
+        // Считаем общую ширину, чтобы отцентровать всю фразу на панели
+        float totalWidth = (parts.Count * slotWidth) + ((parts.Count - 1) * gap);
+        currentX = -totalWidth / 2f + 800;
 
         foreach (string part in parts)
         {
+            // 1. Создаем контейнер слота
             GameObject slotObj = new GameObject($"Slot_{part}");
             slotObj.transform.SetParent(targetPanel);
             
-            RectTransform rt = slotObj.AddComponent<RectTransform>();
-            rt.anchorMin = Vector2.zero;
-            rt.anchorMax = Vector2.zero;
-            rt.pivot = new Vector2(0.5f, 0.5f);
-            rt.sizeDelta = new Vector2(100, 50); // Размер ячейки (подстроится под текст)
-            rt.anchoredPosition = new Vector2(currentX, 0);
-
-            // Создаем текст внутри слота
-            TextMeshProUGUI txt = slotObj.AddComponent<TextMeshProUGUI>();
-            txt.text = part;
-            txt.alignment = TextAlignmentOptions.Center;
-            txt.color = Color.black; // Изначально ЧЁРНЫЙ
-            txt.fontSize = 40;
+            RectTransform slotRect = slotObj.GetComponent<RectTransform>();
+            if (slotRect == null) slotRect = slotObj.AddComponent<RectTransform>();
             
-            // Подстраиваем размер ячейки под текст
-            txt.autoSizeTextContainer = true; 
-            //rt.sizeDelta = txt.preferredSize;
+            // Якоря в точку, позиция задается anchoredPosition
+            slotRect.anchorMin = Vector2.zero;
+            slotRect.anchorMax = Vector2.zero;
+            slotRect.pivot = new Vector2(0.5f, 0.5f); // Опорная точка по центру
+            slotRect.anchoredPosition = new Vector2(currentX, 0);
+            
+            // !!! ГЛАВНОЕ: Мы ЗАДАЕМ размер жестко здесь. Никаких попыток измерить текст!
+            slotRect.sizeDelta = new Vector2(slotWidth, slotHeight); 
 
-            TargetSlot slot = new TargetSlot();
-            slot.rectTransform = rt;
-            slot.textObject = txt;
-            targetSlots.Add(slot);
+            // 2. Фон (Image) - белый прямоугольник
+            GameObject imageObj = new GameObject("Background");
+            imageObj.transform.SetParent(slotObj.transform);
+            Image bgImage = imageObj.AddComponent<Image>();
+            bgImage.color = Color.white;
+            
+            RectTransform imgRect = imageObj.GetComponent<RectTransform>();
+            imgRect.anchorMin = Vector2.zero;
+            imgRect.anchorMax = Vector2.one; // Растягиваем фон на весь слот (100%)
+            imgRect.offsetMin = Vector2.zero;
+            imgRect.offsetMax = Vector2.zero;
 
-            currentX += rt.sizeDelta.x + slotGap;
+            // 3. Текст (TMP)
+            GameObject textObj = new GameObject("Text");
+            textObj.transform.SetParent(imageObj.transform); // Текст внутри фона
+            
+            TextMeshProUGUI tmpText = textObj.AddComponent<TextMeshProUGUI>();
+            tmpText.text = part;
+            tmpText.color = new Color(0f, 0f, 0f, 1f); // Черный цвет
+            tmpText.alignment = TextAlignmentOptions.Center; // Центрируем текст
+            tmpText.fontSize = 32; // Чуть крупнее, чтобы было видно
+            tmpText.autoSizeTextContainer = false; // ОТКЛЮЧАЕМ авто-размер! Он враг центрирования.
+            
+            // ВАЖНО: Якоря текста должны быть РАСТЯНУТЫ на весь родительский фон
+            RectTransform txtRect = textObj.GetComponent<RectTransform>();
+            txtRect.anchorMin = Vector2.zero;
+            txtRect.anchorMax = Vector2.one; 
+            txtRect.offsetMin = Vector2.zero;
+            txtRect.offsetMax = Vector2.zero;
+            // Размер текста мы НЕ меняем. Он заполняет весь белый прямоугольник благодаря якорям выше.
+
+            // Сохраняем ссылки
+            TargetSlot slotData = new TargetSlot();
+            slotData.rectTransform = slotRect;
+            slotData.textObject = tmpText;
+            targetSlots.Add(slotData);
+
+            // Двигаем позицию для следующего слова
+            currentX += slotWidth + gap;
+            
+            Debug.Log($"[OK] Слот '{part}': позиция X={currentX}, размер слота={slotWidth}x{slotHeight}");
         }
     }
 
@@ -148,43 +178,22 @@ public class MinigameManager : MonoBehaviour
             return new List<string>();
         }
 
-        if (words.Length >= piecesCount)
+        if (words.Length < piecesCount) piecesCount = words.Length;
+
+        var actualPiecesCount = Mathf.Min(piecesCount, words.Length);
+        var result = new List<string>(actualPiecesCount);
+        var baseSize = words.Length / actualPiecesCount;
+        var remainder = words.Length % actualPiecesCount;
+        var index = 0;
+
+        for (var i = 0; i < actualPiecesCount; i++)
         {
-            var actualPiecesCount = Mathf.Min(piecesCount, words.Length);
-            var result = new List<string>(actualPiecesCount);
-            var baseSize = words.Length / actualPiecesCount;
-            var remainder = words.Length % actualPiecesCount;
-            var index = 0;
-
-            for (var i = 0; i < actualPiecesCount; i++)
-            {
-                var size = baseSize + (i < remainder ? 1 : 0);
-                if (size <= 0) continue;
-
-                result.Add(string.Join(" ", words, index, size));
-                index += size;
-            }
-            return result;
-        }
-
-        // Fallback: если слов меньше чем нужно, режем по символам
-        var chars = trimmedPhrase.ToCharArray();
-        var charPiecesCount = Mathf.Min(piecesCount, chars.Length);
-        var charResult = new List<string>(charPiecesCount);
-        var charBaseSize = chars.Length / charPiecesCount;
-        var charRemainder = chars.Length % charPiecesCount;
-        var charIndex = 0;
-
-        for (var i = 0; i < charPiecesCount; i++)
-        {
-            var size = charBaseSize + (i < charRemainder ? 1 : 0);
+            var size = baseSize + (i < remainder ? 1 : 0);
             if (size <= 0) continue;
-
-            charResult.Add(new string(chars, charIndex, size));
-            charIndex += size;
+            result.Add(string.Join(" ", words, index, size));
+            index += size;
         }
-
-        return charResult;
+        return result;
     }
 
     public void StartGame(string phrase, int piecesCount, float moveSpeed, float? customTime = null)
@@ -226,14 +235,14 @@ public class MinigameManager : MonoBehaviour
             // ПРАВИЛЬНЫЙ ОТВЕТ
             Debug.Log($"Правильно! Нажата кнопка #{index}");
             
-            currentCorrectIndex++; // Увеличиваем ожидаемый индекс
-            
             pressedButton.Hide(); // Удаляем кнопку
 
             if (currentCorrectIndex < targetSlots.Count)
             {
             // КРАСИМ ТОЛЬКО ТЕКСТ В ЗЕЛЕНЫЙ
             targetSlots[currentCorrectIndex].textObject.color = Color.green;
+            
+            currentCorrectIndex++; // Увеличиваем ожидаемый индекс
             
             // (Опционально) Если хочешь, чтобы и фон стал светло-зеленым:
             // targetSlots[currentCorrectIndex].imageObject.color = new Color(0.8f, 1f, 0.8f);

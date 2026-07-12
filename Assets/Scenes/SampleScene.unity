@@ -421,6 +421,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
+--- !u!224 &855527598 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 8012412565896752164, guid: 0534abbcd623cc047b342c33bb7a109e, type: 3}
+  m_PrefabInstance: {fileID: 5539406501534720778}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &890595470 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 22777753726846343, guid: 0534abbcd623cc047b342c33bb7a109e, type: 3}
@@ -479,11 +484,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1176909798}
   m_CullTransparentMesh: 1
---- !u!224 &1364403224 stripped
-RectTransform:
-  m_CorrespondingSourceObject: {fileID: 5749242767119986232, guid: 0534abbcd623cc047b342c33bb7a109e, type: 3}
-  m_PrefabInstance: {fileID: 5539406501534720778}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1449695983 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 6276948497853613541, guid: 0534abbcd623cc047b342c33bb7a109e, type: 3}
@@ -617,7 +617,7 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 1364403224}
+    m_TransformParent: {fileID: 855527598}
     m_Modifications:
     - target: {fileID: 3993412237903873432, guid: a8afdb8efed41a740a4bc4f59b3e8d29, type: 3}
       propertyPath: m_SizeDelta.x
@@ -697,7 +697,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8472282079257107290, guid: a8afdb8efed41a740a4bc4f59b3e8d29, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -835
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8472282079257107290, guid: a8afdb8efed41a740a4bc4f59b3e8d29, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -959,7 +959,7 @@ PrefabInstance:
     - {fileID: 7963923054069742506, guid: 0534abbcd623cc047b342c33bb7a109e, type: 3}
     - {fileID: 5410736666219080777, guid: 0534abbcd623cc047b342c33bb7a109e, type: 3}
     m_AddedGameObjects:
-    - targetCorrespondingSourceObject: {fileID: 5749242767119986232, guid: 0534abbcd623cc047b342c33bb7a109e, type: 3}
+    - targetCorrespondingSourceObject: {fileID: 8012412565896752164, guid: 0534abbcd623cc047b342c33bb7a109e, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1176909799}
     m_AddedComponents: []
