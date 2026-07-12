@@ -6,7 +6,7 @@ using TMPro; // Если используешь TextMeshPro
 public class TargetSlot : MonoBehaviour
 {
     public RectTransform rectTransform;
-    public TextMeshProUGUI textObject; // Или Text, если не TMP
+    public TextMeshProUGUI textObject;
     
     public void SetText(string text)
     {

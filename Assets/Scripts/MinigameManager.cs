@@ -24,8 +24,8 @@ public class MinigameManager : MonoBehaviour
     private List<string> pieces;
     private int currentCorrectIndex;
     private bool gameRunning;
-    private List<TargetSlot> targetSlots = new List<TargetSlot>();
-    public RectTransform targetPanel;
+    public RectTransform targetPanel; // Сюда кинь свою панель
+    public TextMeshProUGUI targetText; // Сюда кинь ОДИН текстовый объект на панели
 
     void Start()
     {
@@ -76,89 +76,42 @@ public class MinigameManager : MonoBehaviour
             TimeOut();
         }
     }
-    private void RenderTargetPhrase(List<string> parts)
+    private void RenderFullPhrase()
     {
-        // 1. Чистим старые слоты
-        foreach (var slot in targetSlots)
-        {
-            if (slot.rectTransform != null) Destroy(slot.rectTransform.gameObject);
-        }
-        targetSlots.Clear();
-
-        float currentX = 0f;
+        string finalText = "";
         
-        // --- НАСТРОЙКИ РАЗМЕРОВ (поиграй с этими цифрами, если нужно) ---
-        const float slotWidth = 400f;  // Ширина "кармана" для слова
-        const float slotHeight = 140f;  // Высота "кармана"
-        const float gap = 400f;         // Расстояние между словами
-        // -----------------------------------------------------------------
-
-        // Считаем общую ширину, чтобы отцентровать всю фразу на панели
-        float totalWidth = (parts.Count * slotWidth) + ((parts.Count - 1) * gap);
-        currentX = -totalWidth / 2f + 800;
-
-        foreach (string part in parts)
+        for (int i = 0; i < pieces.Count; i++)
         {
-            // 1. Создаем контейнер слота
-            GameObject slotObj = new GameObject($"Slot_{part}");
-            slotObj.transform.SetParent(targetPanel);
+            string word = pieces[i];
             
-            RectTransform slotRect = slotObj.GetComponent<RectTransform>();
-            if (slotRect == null) slotRect = slotObj.AddComponent<RectTransform>();
+            // Логика цвета:
+            // Если индекс меньше текущего правильного -> Чёрный
+            // Если равен или больше (но мы еще не открыли) -> Черный (или серый, если хочешь показать "будущее")
+            // Но по твоей логике: сначала всё чёрное, потом по клику красим.
             
-            // Якоря в точку, позиция задается anchoredPosition
-            slotRect.anchorMin = Vector2.zero;
-            slotRect.anchorMax = Vector2.zero;
-            slotRect.pivot = new Vector2(0.5f, 0.5f); // Опорная точка по центру
-            slotRect.anchoredPosition = new Vector2(currentX, 0);
+            string colorTag = "<color=black>"; 
             
-            // !!! ГЛАВНОЕ: Мы ЗАДАЕМ размер жестко здесь. Никаких попыток измерить текст!
-            slotRect.sizeDelta = new Vector2(slotWidth, slotHeight); 
-
-            // 2. Фон (Image) - белый прямоугольник
-            GameObject imageObj = new GameObject("Background");
-            imageObj.transform.SetParent(slotObj.transform);
-            Image bgImage = imageObj.AddComponent<Image>();
-            bgImage.color = Color.white;
+            // Если слово уже "открыто" (мы нажали на него ранее)
+            if (i < currentCorrectIndex)
+            {
+                colorTag = "<color=green>";
+            }
             
-            RectTransform imgRect = imageObj.GetComponent<RectTransform>();
-            imgRect.anchorMin = Vector2.zero;
-            imgRect.anchorMax = Vector2.one; // Растягиваем фон на весь слот (100%)
-            imgRect.offsetMin = Vector2.zero;
-            imgRect.offsetMax = Vector2.zero;
-
-            // 3. Текст (TMP)
-            GameObject textObj = new GameObject("Text");
-            textObj.transform.SetParent(imageObj.transform); // Текст внутри фона
+            finalText += $"{colorTag}{word}</color>";
             
-            TextMeshProUGUI tmpText = textObj.AddComponent<TextMeshProUGUI>();
-            tmpText.text = part;
-            tmpText.color = new Color(0f, 0f, 0f, 1f); // Черный цвет
-            tmpText.alignment = TextAlignmentOptions.Center; // Центрируем текст
-            tmpText.fontSize = 32; // Чуть крупнее, чтобы было видно
-            tmpText.autoSizeTextContainer = false; // ОТКЛЮЧАЕМ авто-размер! Он враг центрирования.
-            
-            // ВАЖНО: Якоря текста должны быть РАСТЯНУТЫ на весь родительский фон
-            RectTransform txtRect = textObj.GetComponent<RectTransform>();
-            txtRect.anchorMin = Vector2.zero;
-            txtRect.anchorMax = Vector2.one; 
-            txtRect.offsetMin = Vector2.zero;
-            txtRect.offsetMax = Vector2.zero;
-            // Размер текста мы НЕ меняем. Он заполняет весь белый прямоугольник благодаря якорям выше.
-
-            // Сохраняем ссылки
-            TargetSlot slotData = new TargetSlot();
-            slotData.rectTransform = slotRect;
-            slotData.textObject = tmpText;
-            targetSlots.Add(slotData);
-
-            // Двигаем позицию для следующего слова
-            currentX += slotWidth + gap;
-            
-            Debug.Log($"[OK] Слот '{part}': позиция X={currentX}, размер слота={slotWidth}x{slotHeight}");
+            // Добавляем пробел между словами, если это не последний символ/знак
+            if (i < pieces.Count - 1)
+            {
+                // Пробел тоже красим в цвет текущего слова, чтобы не было белых дыр, 
+                // или делаем его нейтральным. Давай сделаем нейтральным серым для красоты
+                finalText += "<color=#AAAAAA> </color>"; 
+            }
         }
-    }
 
+        targetText.text = finalText;
+        
+        Debug.Log($"Фраза собрана: {finalText}");
+    }
     public static List<string> Split(string phrase, int piecesCount)
     {
         if (string.IsNullOrWhiteSpace(phrase))
@@ -206,7 +159,15 @@ public class MinigameManager : MonoBehaviour
         timeLeft = gameTime;
         pieces = Split(phrase, piecesCount);
 
-        RenderTargetPhrase(pieces);
+                if (targetText != null)
+        {
+            targetText.richText = true; // ОБЯЗАТЕЛЬНО! Без этого цвета не сработают
+            RenderFullPhrase();
+        }
+        else
+        {
+            Debug.LogError("НЕ НАЗНАЧЕН ОБЪЕКТ targetText в инспекторе!");
+        }
         if (buttonSpawner != null)
         {
             var createdButtons = buttonSpawner.SpawnButtons(pieces, moveSpeed, this); 
@@ -237,16 +198,15 @@ public class MinigameManager : MonoBehaviour
             
             pressedButton.Hide(); // Удаляем кнопку
 
-            if (currentCorrectIndex < targetSlots.Count)
-            {
             // КРАСИМ ТОЛЬКО ТЕКСТ В ЗЕЛЕНЫЙ
-            targetSlots[currentCorrectIndex].textObject.color = Color.green;
             
             currentCorrectIndex++; // Увеличиваем ожидаемый индекс
             
+            RenderFullPhrase(); 
+            Debug.Log($"Current correct index {currentCorrectIndex}!");
+            
             // (Опционально) Если хочешь, чтобы и фон стал светло-зеленым:
             // targetSlots[currentCorrectIndex].imageObject.color = new Color(0.8f, 1f, 0.8f);
-            }
 
             // Проверка на победу
             if (currentCorrectIndex >= pieces.Count)
