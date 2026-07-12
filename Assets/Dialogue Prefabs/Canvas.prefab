@@ -2935,7 +2935,7 @@ MonoBehaviour:
   defaultPieces: 3
   defaultVelocity: 200
   multiplierVelocity: 100
-  testEasiness: 1
+  testEasiness: 2
   targetPanel: {fileID: 0}
   targetText: {fileID: 0}
 --- !u!1 &8484443309719337691
