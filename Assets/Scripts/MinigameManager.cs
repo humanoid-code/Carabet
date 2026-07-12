@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -12,7 +13,8 @@ public class MinigameManager : MonoBehaviour
     [SerializeField] private int testPieces;
     [SerializeField] private float testSpeed;
     [SerializeField] private Slider timeSlider;
-    [SerializeField] private float totalTime = 10f;       // Можно менять в инспекторе или передавать в StartGame
+    [SerializeField] private float totalTime = 10f;
+    [SerializeField] private float slotGap = 200f;
     
     private float timeLeft;     
     public event Action OnGameFinished;      // Победа (собрали все слова)
@@ -22,6 +24,8 @@ public class MinigameManager : MonoBehaviour
     private List<string> pieces;
     private int currentCorrectIndex;
     private bool gameRunning;
+    public RectTransform targetPanel; // Сюда кинь свою панель
+    public TextMeshProUGUI targetText; // Сюда кинь ОДИН текстовый объект на панели
 
     void Start()
     {
@@ -39,7 +43,6 @@ public class MinigameManager : MonoBehaviour
             timeSlider.value = 1f; 
             timeSlider.interactable = false; // Чтобы игрок не мог двигать ползунок мышкой
         }
-        StartGame(testPhrase, testPieces, testSpeed);
     }
 
     void Update()
@@ -73,7 +76,42 @@ public class MinigameManager : MonoBehaviour
             TimeOut();
         }
     }
+    private void RenderFullPhrase()
+    {
+        string finalText = "";
+        
+        for (int i = 0; i < pieces.Count; i++)
+        {
+            string word = pieces[i];
+            
+            // Логика цвета:
+            // Если индекс меньше текущего правильного -> Чёрный
+            // Если равен или больше (но мы еще не открыли) -> Черный (или серый, если хочешь показать "будущее")
+            // Но по твоей логике: сначала всё чёрное, потом по клику красим.
+            
+            string colorTag = "<color=black>"; 
+            
+            // Если слово уже "открыто" (мы нажали на него ранее)
+            if (i < currentCorrectIndex)
+            {
+                colorTag = "<color=green>";
+            }
+            
+            finalText += $"{colorTag}{word}</color>";
+            
+            // Добавляем пробел между словами, если это не последний символ/знак
+            if (i < pieces.Count - 1)
+            {
+                // Пробел тоже красим в цвет текущего слова, чтобы не было белых дыр, 
+                // или делаем его нейтральным. Давай сделаем нейтральным серым для красоты
+                finalText += "<color=#AAAAAA> </color>"; 
+            }
+        }
 
+        targetText.text = finalText;
+        
+        Debug.Log($"Фраза собрана: {finalText}");
+    }
     public static List<string> Split(string phrase, int piecesCount)
     {
         if (string.IsNullOrWhiteSpace(phrase))
@@ -93,43 +131,22 @@ public class MinigameManager : MonoBehaviour
             return new List<string>();
         }
 
-        if (words.Length >= piecesCount)
+        if (words.Length < piecesCount) piecesCount = words.Length;
+
+        var actualPiecesCount = Mathf.Min(piecesCount, words.Length);
+        var result = new List<string>(actualPiecesCount);
+        var baseSize = words.Length / actualPiecesCount;
+        var remainder = words.Length % actualPiecesCount;
+        var index = 0;
+
+        for (var i = 0; i < actualPiecesCount; i++)
         {
-            var actualPiecesCount = Mathf.Min(piecesCount, words.Length);
-            var result = new List<string>(actualPiecesCount);
-            var baseSize = words.Length / actualPiecesCount;
-            var remainder = words.Length % actualPiecesCount;
-            var index = 0;
-
-            for (var i = 0; i < actualPiecesCount; i++)
-            {
-                var size = baseSize + (i < remainder ? 1 : 0);
-                if (size <= 0) continue;
-
-                result.Add(string.Join(" ", words, index, size));
-                index += size;
-            }
-            return result;
-        }
-
-        // Fallback: если слов меньше чем нужно, режем по символам
-        var chars = trimmedPhrase.ToCharArray();
-        var charPiecesCount = Mathf.Min(piecesCount, chars.Length);
-        var charResult = new List<string>(charPiecesCount);
-        var charBaseSize = chars.Length / charPiecesCount;
-        var charRemainder = chars.Length % charPiecesCount;
-        var charIndex = 0;
-
-        for (var i = 0; i < charPiecesCount; i++)
-        {
-            var size = charBaseSize + (i < charRemainder ? 1 : 0);
+            var size = baseSize + (i < remainder ? 1 : 0);
             if (size <= 0) continue;
-
-            charResult.Add(new string(chars, charIndex, size));
-            charIndex += size;
+            result.Add(string.Join(" ", words, index, size));
+            index += size;
         }
-
-        return charResult;
+        return result;
     }
 
     public void StartGame(string phrase, int piecesCount, float moveSpeed, float? customTime = null)
@@ -142,10 +159,18 @@ public class MinigameManager : MonoBehaviour
         timeLeft = gameTime;
         pieces = Split(phrase, piecesCount);
 
-
+                if (targetText != null)
+        {
+            targetText.richText = true; // ОБЯЗАТЕЛЬНО! Без этого цвета не сработают
+            RenderFullPhrase();
+        }
+        else
+        {
+            Debug.LogError("НЕ НАЗНАЧЕН ОБЪЕКТ targetText в инспекторе!");
+        }
         if (buttonSpawner != null)
         {
-            var createdButtons = buttonSpawner.SpawnButtons(pieces, moveSpeed); 
+            var createdButtons = buttonSpawner.SpawnButtons(pieces, moveSpeed, this); 
             // ВАЖНО: SpawnButtons должен возвращать List<PhraseButton>, см. пункт 3!
     
             ButtonDisposer disposer = GetComponent<ButtonDisposer>();
@@ -156,6 +181,7 @@ public class MinigameManager : MonoBehaviour
         
         // Сбрасываем полосу времени
         if(timeSlider != null) timeSlider.value = 1f;
+        if (timeSlider != null) timeSlider.gameObject.SetActive(true);
     }
 
     public void HandleButtonPress(PhraseButton pressedButton)
@@ -170,9 +196,17 @@ public class MinigameManager : MonoBehaviour
             // ПРАВИЛЬНЫЙ ОТВЕТ
             Debug.Log($"Правильно! Нажата кнопка #{index}");
             
+            pressedButton.Hide(); // Удаляем кнопку
+
+            // КРАСИМ ТОЛЬКО ТЕКСТ В ЗЕЛЕНЫЙ
+            
             currentCorrectIndex++; // Увеличиваем ожидаемый индекс
             
-            pressedButton.Hide(); // Удаляем кнопку
+            RenderFullPhrase(); 
+            Debug.Log($"Current correct index {currentCorrectIndex}!");
+            
+            // (Опционально) Если хочешь, чтобы и фон стал светло-зеленым:
+            // targetSlots[currentCorrectIndex].imageObject.color = new Color(0.8f, 1f, 0.8f);
 
             // Проверка на победу
             if (currentCorrectIndex >= pieces.Count)
@@ -201,7 +235,8 @@ public class MinigameManager : MonoBehaviour
     {
         gameRunning = false;
         Debug.Log("Мини-игра окончена! Победа.");
-        Destroy(timeSlider.gameObject);
+
+        if (timeSlider != null) timeSlider.gameObject.SetActive(false); // Прячем вместо удаления
         OnGameFinished?.Invoke();
     }
 
@@ -209,14 +244,15 @@ public class MinigameManager : MonoBehaviour
     {
         gameRunning = false;
         Debug.Log("Время вышло! ПРОИГРЫШ.");
-        
+
         ButtonDisposer disposer = GetComponent<ButtonDisposer>();
-        if (disposer != null) 
+        if (disposer != null)
         {
             disposer.DestroyAllButtons();
         }
-        Destroy(timeSlider.gameObject);
-        
+
+        if (timeSlider != null) timeSlider.gameObject.SetActive(false); // Прячем вместо удаления
+
         OnTimeOut?.Invoke();
     }
 }
