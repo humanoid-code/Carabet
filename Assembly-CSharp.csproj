@@ -53,7 +53,6 @@
     <Compile Include="Assets\Scripts\ButtonSpawner.cs" />
     <Compile Include="Assets\Scripts\PhraseButton.cs" />
     <Compile Include="Assets\Scripts\ButtonDisposer.cs" />
-    <Compile Include="Assets\Scripts\TargetSlot.cs" />
     <Compile Include="Assets\Ink\Demos\Basic Demo\Scripts\QuitGameOnKeypress.cs" />
     <Compile Include="Assets\Scripts\MovingPhraseButton.cs" />
     <Compile Include="Assets\Ink\Demos\Basic Demo\Scripts\BasicInkExample.cs" />
