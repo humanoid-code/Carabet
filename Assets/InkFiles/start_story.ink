@@ -1,5 +1,5 @@
 === start ===
-# char:manager
+# char:Adel
 Рассказываю про контекст и роль.
 * [ДАЛЕЕ (2 минуты)] -> characters
 * [Пропустить обучение] -> ending
@@ -48,7 +48,6 @@
 * [ДАЛЕЕ] -> ending
     
 === ending ===
-# char:manager
 # law:=50
 # money:=100
 # workers_wellbeing:=50
