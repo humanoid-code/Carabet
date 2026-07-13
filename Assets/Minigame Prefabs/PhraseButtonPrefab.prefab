@@ -9,12 +9,12 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6415586718587835091}
-  - component: {fileID: -1443363762191235055}
   - component: {fileID: 3068504434400637421}
   - component: {fileID: 6302661584938317768}
   - component: {fileID: 1330204133745943413}
   - component: {fileID: 1592956014664240332}
   - component: {fileID: 2253281069771896448}
+  - component: {fileID: 2407540532602013922}
   m_Layer: 0
   m_Name: PhraseButtonPrefab
   m_TagString: Untagged
@@ -43,21 +43,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &-1443363762191235055
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2135525254437508485}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: abb65438371a578458b6fc0543f5fa47, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: '::'
-  textLabel: {fileID: 4509030899245128792}
-  button: {fileID: 6302661584938317768}
-  fadeDuration: 0.6
 --- !u!222 &3068504434400637421
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -119,11 +104,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 2135525254437508485}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6fbf1e4bac8f30b4e96ef9bba1fac87f, type: 3}
+  m_Script: {fileID: 11500000, guid: e37111f9c9e525b48819fc3447cbce8f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
-  speed: 200
-  randomRange: 1
+  textLabel: {fileID: 4509030899245128792}
+  button: {fileID: 6302661584938317768}
+  fadeDuration: 0.6
 --- !u!114 &1592956014664240332
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -150,6 +136,20 @@ CanvasGroup:
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
+--- !u!114 &2407540532602013922
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2135525254437508485}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8632ad4f597aeb343b876e16b2cc98d2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MovingPhraseButton
+  speed: 200
+  randomRange: 1
 --- !u!1 &4352080073684229610
 GameObject:
   m_ObjectHideFlags: 0

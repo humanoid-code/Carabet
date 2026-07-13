@@ -13,29 +13,33 @@ public struct CharacterData
 
 public class DialogueManager : MonoBehaviour
 {
-    [Header("���� ������� JSON")]
+    [Header("Файл истории JSON")]
     [SerializeField] private TextAsset inkJsonAsset;
     private Story story;
 
-    [Header("����� � UI")]
+    [Header("Текст и UI")]
     [SerializeField] private TextMeshProUGUI dialogueText;
     [SerializeField] private Transform choicesContainer;
     [SerializeField] private GameObject choiceButtonPrefab;
 
-    [Header("������ �� ���������")]
+    [Header("Ссылки на персонажей")]
     [SerializeField] private GameObject characterSprite;
 
-    [Header("���� �������� ����������")]
+    [Header("База данных персонажей")]
     [SerializeField] private List<CharacterData> charactersList;
 
-    [Header("���������")]
+    [Header("Мини-игра")]
     [SerializeField] private MinigameManager minigameManager;
 
-    [Header("����")]
+    [Header("Окна")]
     [SerializeField] private GameObject dialoguePanel;
 
     private GameManager gameManager;
-    private bool ignorePositivesInNextNode = false;
+
+    // Новые переменные для простой логики "каждый второй" и отката
+    private int dialogueCounter = 0;
+    private string savedStoryState = "";
+    private string lastChosenPhrase = "";
 
     void Start()
     {
@@ -49,15 +53,14 @@ public class DialogueManager : MonoBehaviour
         }
     }
 
-    // ����� ��� ������� ������ � ������ ������� �������
     private void RestartDialogueStory()
     {
         if (inkJsonAsset != null)
         {
             story = new Story(inkJsonAsset.text);
             story.ChoosePathString("start");
+            dialogueCounter = 0;
 
-            // ���������� ����� � GameManager �� ��������� ��� �����������
             if (gameManager != null)
             {
                 gameManager.law = 50;
@@ -71,18 +74,22 @@ public class DialogueManager : MonoBehaviour
         }
     }
 
-    // ����� �������: ������� ����������� ��� ������
+    // ПОБЕДА: Выбор подтверждается, мы просто показываем панель
     private void OnMinigameWin()
     {
-        ignorePositivesInNextNode = false;
         if (dialoguePanel != null) dialoguePanel.SetActive(true);
         RefreshView();
     }
 
-    // ����� ��������: �������� ������������� ������
+    // ПРОИГРЫШ: Выбор аннулируется, откатываем Ink назад
     private void OnMinigameLose()
     {
-        ignorePositivesInNextNode = true;
+        if (!string.IsNullOrEmpty(savedStoryState))
+        {
+            story.state.LoadJson(savedStoryState); // Полный откат состояния Ink до нажатия
+            dialogueCounter--; // Возвращаем счетчик шагов назад
+        }
+
         if (dialoguePanel != null) dialoguePanel.SetActive(true);
         RefreshView();
     }
@@ -96,27 +103,6 @@ public class DialogueManager : MonoBehaviour
         }
     }
 
-    private bool ChoiceGivesPlus(List<string> tags)
-    {
-        if (tags == null || tags.Count == 0) return false;
-
-        foreach (string tag in tags)
-        {
-            string[] splitTag = tag.Split(':');
-            string key = splitTag[0].Trim().ToLower();
-            string value = splitTag.Length > 1 ? splitTag[1].Trim() : "";
-
-            if (key == "money" || key == "law" || key == "rating" || key == "workers_wellbeing")
-            {
-                if (value.StartsWith("+"))
-                {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
     void RefreshView()
     {
         foreach (Transform child in choicesContainer) Destroy(child.gameObject);
@@ -128,7 +114,6 @@ public class DialogueManager : MonoBehaviour
             HandleTags(story.currentTags);
         }
         dialogueText.text = text;
-        ignorePositivesInNextNode = false;
 
         if (story.currentChoices.Count > 0)
         {
@@ -142,34 +127,54 @@ public class DialogueManager : MonoBehaviour
                 button.GetComponent<Button>().onClick.AddListener(() =>
                 {
                     string chosenPhrase = choice.text;
-                    string sourceKnot = choice.sourcePath;
-                    List<string> choiceTags = choice.tags;
+                    string upperPhrase = chosenPhrase.ToUpper(); // Переводим в верхний регистр для надежности проверки
 
-                    // ���� ������ "������ �������", ������ ������������� ��� ������� ������
-                    if (chosenPhrase.Contains("������ �������"))
+                    // 1. Технический рестарт игры
+                    if (upperPhrase.Contains("НАЧАТЬ СНАЧАЛА") || upperPhrase.Contains("ИГРАТЬ СНАЧАЛА"))
                     {
                         RestartDialogueStory();
                         return;
                     }
 
-                    // �������� �� ������ ����-����
-                    if (sourceKnot != null && sourceKnot.ToLower().Contains("dialogue") && ChoiceGivesPlus(choiceTags))
+                    // Сохраняем состояние ДЛЯ ОТКАТА на случай проигрыша
+                    savedStoryState = story.state.ToJson();
+                    lastChosenPhrase = chosenPhrase;
+
+                    // Делаем выбор в Ink
+                    story.ChooseChoiceIndex(index);
+
+                    // 2. ПРОВЕРКА: Является ли кнопка технической/обучающей?
+                    // Если на кнопке написано "ДАЛЕЕ", "ПРОПУСТИТЬ ОБУЧЕНИЕ" или "ИГРАТЬ" — это НЕ сюжетный выбор
+                    bool isTechnicalClick = upperPhrase.Contains("ДАЛЕЕ") ||
+                                            upperPhrase.Contains("ПРОПУСТИТЬ") ||
+                                            upperPhrase.Contains("ИГРАТЬ");
+
+                    if (!isTechnicalClick)
                     {
-                        Debug.Log($"[DIAG] ����� ��� ����� � {sourceKnot}! ��������� ����-����.");
+                        // Увеличиваем счётчик только для реальных выборов персонажей (Выбор 1.1, Ответить и т.д.)
+                        dialogueCounter++;
+                        Debug.Log($"[МЕХАНИКА] Сюжетный выбор! Шаг счетчика: {dialogueCounter}");
+                    }
+                    else
+                    {
+                        Debug.Log($"[МЕХАНИКА] Пропуск счетчика (нажата техническая кнопка: {chosenPhrase})");
+                    }
 
+                    // 3. Запускаем мини-игру только на каждый второй РЕАЛЬНЫЙ выбор
+                    if (!isTechnicalClick && dialogueCounter % 2 == 0)
+                    {
+                        Debug.Log($"[МЕХАНИКА] Шаг {dialogueCounter}. Запуск мини-игры.");
+
+                        // Скрываем диалог и уходим играть
                         if (dialoguePanel != null) dialoguePanel.SetActive(false);
-
-                        story.ChooseChoiceIndex(index);
-
                         if (minigameManager != null)
                         {
-                            minigameManager.StartGame(chosenPhrase, 5);
+                            minigameManager.StartGame(lastChosenPhrase, 5);
                         }
                     }
                     else
                     {
-                        Debug.Log($"[DIAG] ������� ��� ������ � {sourceKnot} (����-���� ���������).");
-                        story.ChooseChoiceIndex(index);
+                        // Обычный шаг текста (для "Далее", обучения или нечетных выборов)
                         RefreshView();
                     }
                 });
@@ -184,16 +189,6 @@ public class DialogueManager : MonoBehaviour
             string[] splitTag = tag.Split(':');
             string key = splitTag[0].Trim();
             string value = splitTag.Length > 1 ? splitTag[1].Trim() : "";
-
-            // �������� ���� BLOCK:
-            if (key == "money" || key == "law" || key == "rating" || key == "workers_wellbeing")
-            {
-                if (ignorePositivesInNextNode && value.StartsWith("+"))
-                {
-                    Debug.Log($"[STATS] ��������! ���� ��� '{key}' ({value}) ��������������.");
-                    continue; // ��������� � ���������� ����, ���� ���� �� ����������!
-                }
-            }
 
             switch (key)
             {
