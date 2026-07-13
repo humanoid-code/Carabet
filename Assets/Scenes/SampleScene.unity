@@ -742,7 +742,8 @@ PrefabInstance:
       propertyPath: m_Name
       value: TargetSlot
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 2794386714335825829, guid: a8afdb8efed41a740a4bc4f59b3e8d29, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
@@ -764,6 +765,10 @@ PrefabInstance:
     - target: {fileID: 22777753726846343, guid: 0534abbcd623cc047b342c33bb7a109e, type: 3}
       propertyPath: m_IsActive
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 342137357800552535, guid: 0534abbcd623cc047b342c33bb7a109e, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -600
       objectReference: {fileID: 0}
     - target: {fileID: 2169995249712124338, guid: 0534abbcd623cc047b342c33bb7a109e, type: 3}
       propertyPath: m_UiScaleMode
@@ -833,6 +838,10 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 699788205}
+    - target: {fileID: 5576820604700045513, guid: 0534abbcd623cc047b342c33bb7a109e, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: OnStartGame
+      objectReference: {fileID: 0}
     - target: {fileID: 5749242767119986232, guid: 0534abbcd623cc047b342c33bb7a109e, type: 3}
       propertyPath: m_Pivot.y
       value: 1
@@ -984,6 +993,18 @@ PrefabInstance:
     - target: {fileID: 8669428166669846484, guid: 0534abbcd623cc047b342c33bb7a109e, type: 3}
       propertyPath: m_VertexColorAlwaysGammaSpace
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8703253476040375875, guid: 0534abbcd623cc047b342c33bb7a109e, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 699788205}
+    - target: {fileID: 8703253476040375875, guid: 0534abbcd623cc047b342c33bb7a109e, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8703253476040375875, guid: 0534abbcd623cc047b342c33bb7a109e, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: OnContinueButton
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects:

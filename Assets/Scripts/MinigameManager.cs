@@ -12,7 +12,6 @@ public class MinigameManager : MonoBehaviour
     [SerializeField] private string testPhrase;
     [SerializeField] private Slider timeSlider;
     [SerializeField] private float totalTime = 10f;
-    [SerializeField] private float slotGap = 200f;
     [SerializeField] private int defaultPieces = 3;
     [SerializeField] private float defaultVelocity = 200f;
     [SerializeField] private float multiplierVelocity = 100f;

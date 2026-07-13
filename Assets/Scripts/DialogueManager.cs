@@ -50,7 +50,7 @@ public class DialogueManager : MonoBehaviour
     }
 
     // ����� ��� ������� ������ � ������ ������� �������
-    private void RestartDialogueStory()
+    public void RestartDialogueStory()
     {
         if (inkJsonAsset != null)
         {

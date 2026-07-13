@@ -15,26 +15,27 @@ public class GameManager : MonoBehaviour
 
     public GameState currentState = GameState.MainMenu;
 
-    [Header("�����")]
+    [Header("Статистика")]
     public int rating = 0;
     public int money = 0;
     public int law = 0;
     public int workers_wellbeing = 0;
+    
 
-    [Header("����� �� ������")]
+    [Header("Текст для статистики")]
     public TextMeshProUGUI ratingText;
     public TextMeshProUGUI moneyText;
     public TextMeshProUGUI lawText;
     public TextMeshProUGUI workers_wellbeingText;
     private InputAction escapeAction;
 
-    [Header("UI ������ �� ����")]
+    [Header("UI окна для сцен")]
 
     [SerializeField] private GameObject mainMenuWindow;
     [SerializeField] private GameObject gameplayWindow;
     [SerializeField] private GameObject nightResultsWindow;
 
-    [Header("���������� ����")]
+    [Header("Фоновые изображения")]
     [SerializeField] private GameObject location1Background;
     [SerializeField] private GameObject location2Background;
     [SerializeField] private DialogueManager dialogueManager;
@@ -42,8 +43,8 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         SetState(GameState.MainMenu);
-        
-        // Инициализируем действие для Escape
+
+                // Инициализируем действие для Escape
         escapeAction = new InputAction("Escape", binding: "<Keyboard>/escape");
         
         // Подписываемся на событие
@@ -51,19 +52,6 @@ public class GameManager : MonoBehaviour
         
         // Включаем действие
         escapeAction.Enable();
-    }
-
-    void Update()
-    {
-        // Проверяем нажатие Escape
-        if (Input.GetKeyDown(KeyCode.Escape))
-        {
-            // Если мы не в главном меню, возвращаемся в него
-            if (currentState != GameState.MainMenu)
-            {
-                ReturnToMainMenu();
-            }
-        }
     }
 
     public void SetState(GameState newState)
@@ -77,7 +65,6 @@ public class GameManager : MonoBehaviour
         switch (currentState)
         {
             case GameState.MainMenu:
-                mainMenuWindow.SetActive(false);
                 mainMenuWindow.SetActive(true);
                 break;
 
@@ -85,14 +72,12 @@ public class GameManager : MonoBehaviour
                 gameplayWindow.SetActive(true);
                 location1Background.SetActive(true);
                 location2Background.SetActive(false);
-                // ��� ����� �������� ������� ��������
                 break;
 
             case GameState.Location2:
                 gameplayWindow.SetActive(true);
                 location1Background.SetActive(false);
                 location2Background.SetActive(true);
-                // ��� ��������
                 break;
 
             case GameState.NightResults:
@@ -100,38 +85,54 @@ public class GameManager : MonoBehaviour
                 break;
         }
     }
-
+    // Опциональный метод для сброса игры (можно добавить, если нужно)
+    private void ResetGame()
+    {
+        rating = 0;
+        money = 0;
+        law = 0;
+        workers_wellbeing = 0;
+        UpdateStatsUI();
+    }
 
     public void UpdateStatsUI()
     {
-        ratingText?.SetText("������� ���������: " + rating);
-        workers_wellbeingText?.SetText("����������������� �����������: " + workers_wellbeing);
-        lawText?.SetText("�����������: " + law);
-        moneyText?.SetText("������: " + money);
+        ratingText?.SetText("Рейтинг предпринимателя: " + rating);
+        workers_wellbeingText?.SetText("Благополучие работников: " + workers_wellbeing);
+        lawText?.SetText("Законопослушность: " + law);
+        moneyText?.SetText("Деньги: " + money);
     }
 
-    // ���������
+    // Кнопки
 
-    // ����� � ������� -> ����
-    public void OnStartGameButton()
+    // Меню -> Локация1
+    public void OnStartGame ()
+    {
+        ResetGame();
+        dialogueManager.RestartDialogueStory();
+        SetState(GameState.Location1);
+        UpdateStatsUI();
+    }
+
+    public void OnContinueButton()
     {
         SetState(GameState.Location1);
         UpdateStatsUI();
     }
 
-    // ���� -> �����
+    // Локация1 -> Локация2
     public void OnLocation1Finished()
     {
         SetState(GameState.Location2);
     }
 
-    // ����� -> ���� � ����� ���
+    // Локация2 -> Ночь с итогами
     public void OnLocation2Finished()
     {
         SetState(GameState.NightResults);
     }
 
-    // ����� ��� -> ����
+    // Ночь с итогами -> Локация1
     public void OnNextDayButton()
     {
         SetState(GameState.Location1);
@@ -139,7 +140,7 @@ public class GameManager : MonoBehaviour
 
     public void OnExitGameButton()
     {
-        Debug.Log("����� ����� �� ����!");
+        Debug.Log("Выход из игры навсегда!");
         Application.Quit();
     }
 
@@ -152,7 +153,6 @@ public class GameManager : MonoBehaviour
         UpdateStatsUI();
         Debug.Log("Возврат в главное меню по нажатию Escape");
     }
-
     void OnDestroy()
     {
         // Отписываемся и очищаем ресурсы
