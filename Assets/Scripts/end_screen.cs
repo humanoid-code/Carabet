@@ -5,18 +5,18 @@ public class end_screen : MonoBehaviour
 {
     public enum StatType { Money, Law, WorkersWellbeing}
 
-    [Header("Настройки связи")]
-    [SerializeField] private StatType targetStat; // Какую стату отслеживаем
-    [SerializeField] private Image targetImage;   // Компонент картинки
+    [Header("РќР°СЃС‚СЂРѕР№РєРё СЃРІСЏР·Рё")]
+    [SerializeField] private StatType targetStat; // РљР°РєСѓСЋ СЃС‚Р°С‚Сѓ РѕС‚СЃР»РµР¶РёРІР°РµРј
+    [SerializeField] private Image targetImage;   // РљРѕРјРїРѕРЅРµРЅС‚ РєР°СЂС‚РёРЅРєРё
 
-    [Header("Спрайты состояний")]
-    [Tooltip("Если значение СТРОГО МЕНЬШЕ порога")]
-    [SerializeField] private Sprite lowSprite;    // Например, красный/грустный спрайт
-    [Tooltip("Если значение БОЛЬШЕ или РАВНО порогу")]
-    [SerializeField] private Sprite highSprite;   // Например, зеленый/веселый спрайт
+    [Header("РЎРїСЂР°Р№С‚С‹ СЃРѕСЃС‚РѕСЏРЅРёР№")]
+    [Tooltip("Р•СЃР»Рё Р·РЅР°С‡РµРЅРёРµ РЎРўР РћР“Рћ РњР•РќР¬РЁР• РїРѕСЂРѕРіР°")]
+    [SerializeField] private Sprite lowSprite;    // РќР°РїСЂРёРјРµСЂ, РєСЂР°СЃРЅС‹Р№/РіСЂСѓСЃС‚РЅС‹Р№ СЃРїСЂР°Р№С‚
+    [Tooltip("Р•СЃР»Рё Р·РЅР°С‡РµРЅРёРµ Р‘РћР›Р¬РЁР• РёР»Рё Р РђР’РќРћ РїРѕСЂРѕРіСѓ")]
+    [SerializeField] private Sprite highSprite;   // РќР°РїСЂРёРјРµСЂ, Р·РµР»РµРЅС‹Р№/РІРµСЃРµР»С‹Р№ СЃРїСЂР°Р№С‚
 
-    [Header("Порог разделения")]
-    [SerializeField] private int threshold = 60;  // Граница между состояниями
+    [Header("РџРѕСЂРѕРі СЂР°Р·РґРµР»РµРЅРёСЏ")]
+    [SerializeField] private int threshold = 60;  // Р“СЂР°РЅРёС†Р° РјРµР¶РґСѓ СЃРѕСЃС‚РѕСЏРЅРёСЏРјРё
 
     private GameManager gameManager;
 
@@ -42,7 +42,7 @@ public class end_screen : MonoBehaviour
 
         int currentStatValue = GetStatValue();
 
-        // Логика всего для двух состояний:
+        // Р›РѕРіРёРєР° РІСЃРµРіРѕ РґР»СЏ РґРІСѓС… СЃРѕСЃС‚РѕСЏРЅРёР№:
         if (currentStatValue <= threshold)
         {
             if (lowSprite != null) targetImage.sprite = lowSprite;

@@ -5,7 +5,7 @@ public class BackgroundMusic : MonoBehaviour
 {
     public static BackgroundMusic Instance { get; private set; }
 
-    [Header("Настройки музыки")]
+    [Header("РќР°СЃС‚СЂРѕР№РєРё РјСѓР·С‹РєРё")]
     [SerializeField] private AudioSource musicSource;
     [SerializeField] private AudioClip backgroundTrack;
     [Range(0f, 1f)][SerializeField] private float defaultVolume = 0.5f;
@@ -35,22 +35,22 @@ public class BackgroundMusic : MonoBehaviour
         }
     }
 
-    // Внешний метод для запуска плавного изменения громкости
+    // Р’РЅРµС€РЅРёР№ РјРµС‚РѕРґ РґР»СЏ Р·Р°РїСѓСЃРєР° РїР»Р°РІРЅРѕРіРѕ РёР·РјРµРЅРµРЅРёСЏ РіСЂРѕРјРєРѕСЃС‚Рё
     public void SetVolumeSmooth(float targetVolume, float duration = 1.0f)
     {
         if (musicSource == null) return;
 
-        // Если уже идет плавный переход, останавливаем его, чтобы начать новый
+        // Р•СЃР»Рё СѓР¶Рµ РёРґРµС‚ РїР»Р°РІРЅС‹Р№ РїРµСЂРµС…РѕРґ, РѕСЃС‚Р°РЅР°РІР»РёРІР°РµРј РµРіРѕ, С‡С‚РѕР±С‹ РЅР°С‡Р°С‚СЊ РЅРѕРІС‹Р№
         if (fadeCoroutine != null)
         {
             StopCoroutine(fadeCoroutine);
         }
 
-        // Запускаем плавное изменение
+        // Р—Р°РїСѓСЃРєР°РµРј РїР»Р°РІРЅРѕРµ РёР·РјРµРЅРµРЅРёРµ
         fadeCoroutine = StartCoroutine(FadeVolume(targetVolume, duration));
     }
 
-    // Сопрограмма (Coroutine) для постепенного изменения громкости
+    // РЎРѕРїСЂРѕРіСЂР°РјРјР° (Coroutine) РґР»СЏ РїРѕСЃС‚РµРїРµРЅРЅРѕРіРѕ РёР·РјРµРЅРµРЅРёСЏ РіСЂРѕРјРєРѕСЃС‚Рё
     private IEnumerator FadeVolume(float targetVolume, float duration)
     {
         float startVolume = musicSource.volume;
@@ -59,15 +59,15 @@ public class BackgroundMusic : MonoBehaviour
         while (time < duration)
         {
             time += Time.deltaTime;
-            // Плавно интерполируем громкость от текущей к целевой
+            // РџР»Р°РІРЅРѕ РёРЅС‚РµСЂРїРѕР»РёСЂСѓРµРј РіСЂРѕРјРєРѕСЃС‚СЊ РѕС‚ С‚РµРєСѓС‰РµР№ Рє С†РµР»РµРІРѕР№
             musicSource.volume = Mathf.Lerp(startVolume, targetVolume, time / duration);
-            yield return null; // Ждем один кадр
+            yield return null; // Р–РґРµРј РѕРґРёРЅ РєР°РґСЂ
         }
 
-        musicSource.volume = targetVolume; // Фиксируем финальную громкость
+        musicSource.volume = targetVolume; // Р¤РёРєСЃРёСЂСѓРµРј С„РёРЅР°Р»СЊРЅСѓСЋ РіСЂРѕРјРєРѕСЃС‚СЊ
     }
 
-    // Вспомогательный метод, чтобы быстро узнать стандартную громкость
+    // Р’СЃРїРѕРјРѕРіР°С‚РµР»СЊРЅС‹Р№ РјРµС‚РѕРґ, С‡С‚РѕР±С‹ Р±С‹СЃС‚СЂРѕ СѓР·РЅР°С‚СЊ СЃС‚Р°РЅРґР°СЂС‚РЅСѓСЋ РіСЂРѕРјРєРѕСЃС‚СЊ
     public float GetDefaultVolume()
     {
         return defaultVolume;
