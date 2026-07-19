@@ -131,7 +131,7 @@ GameObject:
   - component: {fileID: 44464729}
   - component: {fileID: 44464728}
   m_Layer: 5
-  m_Name: law_back
+  m_Name: workers_back
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1650,7 +1650,7 @@ GameObject:
   - component: {fileID: 886746980}
   - component: {fileID: 886746979}
   m_Layer: 5
-  m_Name: workers_back
+  m_Name: law_back
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1955,7 +1955,7 @@ GameObject:
   - component: {fileID: 1340486396}
   - component: {fileID: 1340486395}
   m_Layer: 5
-  m_Name: workers_front
+  m_Name: law_front
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2376,9 +2376,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 1382486901}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4245f28728bb650458001c0b15726fc0, type: 3}
+  m_Script: {fileID: 11500000, guid: 75a873c1c236e8341a8f3a927d974556, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::StatsDisplayLaw
+  m_EditorClassIdentifier: Assembly-CSharp::StatsDisplayWorkers
   fillImage: {fileID: 1849802487}
   maxValue: 100
 --- !u!1 &1449695983 stripped
@@ -3022,9 +3022,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 1844751595}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 75a873c1c236e8341a8f3a927d974556, type: 3}
+  m_Script: {fileID: 11500000, guid: 4245f28728bb650458001c0b15726fc0, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::StatsDisplayWorkers
+  m_EditorClassIdentifier: Assembly-CSharp::StatsDisplayLaw
   fillImage: {fileID: 1340486395}
   maxValue: 100
 --- !u!1 &1849802485
@@ -3039,7 +3039,7 @@ GameObject:
   - component: {fileID: 1849802488}
   - component: {fileID: 1849802487}
   m_Layer: 5
-  m_Name: law_front
+  m_Name: workers_front
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
