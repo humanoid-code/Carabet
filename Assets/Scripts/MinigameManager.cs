@@ -8,7 +8,7 @@ public class MinigameManager : MonoBehaviour
 {
     [Header("References")]
     [Tooltip("Ссылка на объект, который создает кнопки ВНУТРИ Canvas")]
-    [SerializeField] private ButtonSpawner buttonSpawner; 
+    [SerializeField] private ButtonSpawner buttonSpawner;
     [SerializeField] private string testPhrase;
     [SerializeField] private Slider timeSlider;
     [SerializeField] private float totalTime = 10f;
@@ -16,13 +16,21 @@ public class MinigameManager : MonoBehaviour
     [SerializeField] private float defaultVelocity = 200f;
     [SerializeField] private float multiplierVelocity = 100f;
     [SerializeField] private int testEasiness = 1;
-    
-    private float timeLeft;     
+
+    [Header("Audio Settings")]
+    [SerializeField] private AudioSource sfxSource;       // Для разовых звуков (победа/проигрыш)
+    [SerializeField] private AudioSource timerSource;     // Для тиканья таймера (поставь ему Loop в инспекторе!)
+    [SerializeField] private AudioClip winSound;          // Звук победы
+    [SerializeField] private AudioClip loseSound;         // Звук проигрыша/таймаута
+    [SerializeField] private AudioClip timerTickSound;    // Звук тиканья таймера
+
+    [SerializeField] private GameObject statsPanel;
+
+    private float timeLeft;
     public event Action OnGameFinished;      // Победа (собрали все слова)
     public event Action<string> OnWrongAnswer;// Ошибка
     public event Action OnTimeOut;            // Проигрыш (время вышло)
 
-    
     int piecesCount;
     float moveSpeed;
     private List<string> pieces;
@@ -37,14 +45,14 @@ public class MinigameManager : MonoBehaviour
         {
             Debug.LogError("Ошибка: Не назначен ButtonSpawner! Найди его в Canvas.");
         }
-                if (timeSlider == null)
+        if (timeSlider == null)
         {
             Debug.LogError("Ошибка: Не назначен Time Slider в инспекторе!");
         }
         else
         {
             // Инициализируем полосу на максимум
-            timeSlider.value = 1f; 
+            timeSlider.value = 1f;
             timeSlider.interactable = false; // Чтобы игрок не мог двигать ползунок мышкой
         }
     }
@@ -61,7 +69,7 @@ public class MinigameManager : MonoBehaviour
         {
             float normalizedTime = Mathf.Max(0, timeLeft / this.totalTime);
             timeSlider.value = normalizedTime;
-            
+
             // Меняем цвет полосы, если мало времени (опционально, красный)
             if (normalizedTime < 0.3f && timeSlider.fillRect != null)
             {
@@ -70,7 +78,7 @@ public class MinigameManager : MonoBehaviour
             else if (timeSlider.fillRect != null)
             {
                 // Возвращаем белый/стандартный цвет
-                timeSlider.fillRect.GetComponent<Image>().color = Color.white; 
+                timeSlider.fillRect.GetComponent<Image>().color = Color.white;
             }
         }
 
@@ -80,42 +88,35 @@ public class MinigameManager : MonoBehaviour
             TimeOut();
         }
     }
+
     private void RenderFullPhrase()
     {
         string finalText = "";
-        
+
         for (int i = 0; i < pieces.Count; i++)
         {
             string word = pieces[i];
-            
-            // Логика цвета:
-            // Если индекс меньше текущего правильного -> Чёрный
-            // Если равен или больше (но мы еще не открыли) -> Черный (или серый, если хочешь показать "будущее")
-            // Но по твоей логике: сначала всё чёрное, потом по клику красим.
-            
-            string colorTag = "<color=black>"; 
-            
+            string colorTag = "<color=black>";
+
             // Если слово уже "открыто" (мы нажали на него ранее)
             if (i < currentCorrectIndex)
             {
                 colorTag = "<color=green>";
             }
-            
+
             finalText += $"{colorTag}{word}</color>";
-            
+
             // Добавляем пробел между словами, если это не последний символ/знак
             if (i < pieces.Count - 1)
             {
-                // Пробел тоже красим в цвет текущего слова, чтобы не было белых дыр, 
-                // или делаем его нейтральным. Давай сделаем нейтральным серым для красоты
-                finalText += "<color=#AAAAAA> </color>"; 
+                finalText += "<color=#AAAAAA> </color>";
             }
         }
 
         targetText.text = finalText;
-        
         Debug.Log($"Фраза собрана: {finalText}");
     }
+
     public static List<string> Split(string phrase, int piecesCount)
     {
         if (string.IsNullOrWhiteSpace(phrase))
@@ -163,13 +164,13 @@ public class MinigameManager : MonoBehaviour
         }
         gameRunning = true;
         currentCorrectIndex = 0;
-        
+
         float gameTime = customTime ?? this.totalTime;
         this.totalTime = gameTime;
         timeLeft = gameTime;
         pieces = Split(phrase, piecesCount);
 
-                if (targetText != null)
+        if (targetText != null)
         {
             targetText.richText = true; // ОБЯЗАТЕЛЬНО! Без этого цвета не сработают
             RenderFullPhrase();
@@ -180,18 +181,36 @@ public class MinigameManager : MonoBehaviour
         }
         if (buttonSpawner != null)
         {
-            var createdButtons = buttonSpawner.SpawnButtons(pieces, moveSpeed, this); 
-            // ВАЖНО: SpawnButtons должен возвращать List<PhraseButton>, см. пункт 3!
-    
+            var createdButtons = buttonSpawner.SpawnButtons(pieces, moveSpeed, this);
+
             ButtonDisposer disposer = GetComponent<ButtonDisposer>();
-            if(disposer != null) disposer.RegisterButtons(createdButtons);
+            if (disposer != null) disposer.RegisterButtons(createdButtons);
         }
 
         Debug.Log($"Игра началась! Время: {timeLeft} сек.");
-        
+
+        if (statsPanel != null)
+        {
+            statsPanel.SetActive(false);
+        }
+
+
         // Сбрасываем полосу времени
-        if(timeSlider != null) timeSlider.value = 1f;
+        if (timeSlider != null) timeSlider.value = 1f;
         if (timeSlider != null) timeSlider.gameObject.SetActive(true);
+
+        // --- ЗВУКОВОЙ ДАКИНГ (ПРИГЛУШЕНИЕ МУЗЫКИ) ---
+        if (BackgroundMusic.Instance != null)
+        {
+            BackgroundMusic.Instance.SetVolumeSmooth(0.15f, 0.8f);
+        }
+
+        // Запуск тиканья таймера
+        if (timerSource != null && timerTickSound != null)
+        {
+            timerSource.clip = timerTickSound;
+            timerSource.Play();
+        }
     }
 
     public void HandleButtonPress(PhraseButton pressedButton)
@@ -205,18 +224,12 @@ public class MinigameManager : MonoBehaviour
         {
             // ПРАВИЛЬНЫЙ ОТВЕТ
             Debug.Log($"Правильно! Нажата кнопка #{index}");
-            
-            pressedButton.Hide(); // Удаляем кнопку
 
-            // КРАСИМ ТОЛЬКО ТЕКСТ В ЗЕЛЕНЫЙ
-            
+            pressedButton.Hide(); // Удаляем кнопку
             currentCorrectIndex++; // Увеличиваем ожидаемый индекс
-            
-            RenderFullPhrase(); 
+
+            RenderFullPhrase();
             Debug.Log($"Current correct index {currentCorrectIndex}!");
-            
-            // (Опционально) Если хочешь, чтобы и фон стал светло-зеленым:
-            // targetSlots[currentCorrectIndex].imageObject.color = new Color(0.8f, 1f, 0.8f);
 
             // Проверка на победу
             if (currentCorrectIndex >= pieces.Count)
@@ -228,24 +241,32 @@ public class MinigameManager : MonoBehaviour
         {
             // НЕПРАВИЛЬНЫЙ ОТВЕТ
             Debug.LogWarning($"Ошибка! Ожидалась кнопка #{currentCorrectIndex}, нажата #{index}");
-            
-            // --- МЕСТО ДЛЯ ЛОГИКИ ОШИБКИ ---
-            // Например: проиграть звук ошибки, уменьшить жизни, сбросить прогресс
             OnWrongAnswer?.Invoke("Неверный порядок слов!");
-            
-            // Вариант А: Игра продолжается, игрок должен попробовать снова нажать нужную кнопку
-            // (Ничего не делаем с currentCorrectIndex, он остается прежним)
-            
-            // Вариант Б: Сброс прогресса (раскомментируй, если нужно)
-            // currentCorrectIndex = 0; 
-            // Debug.Log("Прогресс сброшен.");
         }
     }
+
     private void EndGame()
     {
         gameRunning = false;
         Debug.Log("Мини-игра окончена! Победа.");
 
+        StopTimerSound();
+
+        // --- ВОЗВРАТ МУЗЫКИ И ЗВУК ПОБЕДЫ ---
+        if (BackgroundMusic.Instance != null)
+        {
+            float normalVol = BackgroundMusic.Instance.GetDefaultVolume();
+            BackgroundMusic.Instance.SetVolumeSmooth(normalVol, 1.5f);
+        }
+
+        if (sfxSource != null && winSound != null)
+        {
+            sfxSource.PlayOneShot(winSound);
+        }
+        if (statsPanel != null)
+        {
+            statsPanel.SetActive(true);
+        }
         if (timeSlider != null) timeSlider.gameObject.SetActive(false); // Прячем вместо удаления
         OnGameFinished?.Invoke();
     }
@@ -254,6 +275,24 @@ public class MinigameManager : MonoBehaviour
     {
         gameRunning = false;
         Debug.Log("Время вышло! ПРОИГРЫШ.");
+
+        StopTimerSound();
+
+        // --- ВОЗВРАТ МУЗЫКИ И ЗВУК ПРОИГРЫША ---
+        if (BackgroundMusic.Instance != null)
+        {
+            float normalVol = BackgroundMusic.Instance.GetDefaultVolume();
+            BackgroundMusic.Instance.SetVolumeSmooth(normalVol, 1.5f);
+        }
+
+        if (sfxSource != null && loseSound != null)
+        {
+            sfxSource.PlayOneShot(loseSound);
+        }
+        if (statsPanel != null)
+        {
+            statsPanel.SetActive(true);
+        }
 
         ButtonDisposer disposer = GetComponent<ButtonDisposer>();
         if (disposer != null)
@@ -264,5 +303,13 @@ public class MinigameManager : MonoBehaviour
         if (timeSlider != null) timeSlider.gameObject.SetActive(false); // Прячем вместо удаления
 
         OnTimeOut?.Invoke();
+    }
+
+    private void StopTimerSound()
+    {
+        if (timerSource != null && timerSource.isPlaying)
+        {
+            timerSource.Stop();
+        }
     }
 }

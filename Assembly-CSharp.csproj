@@ -61,14 +61,19 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Scripts\MinigameManager.cs" />
+    <Compile Include="Assets\Scripts\statsDislplay\StatsDisplayMoney.cs" />
+    <Compile Include="Assets\Scripts\end_screen.cs" />
     <Compile Include="Assets\Scripts\ButtonSpawner.cs" />
     <Compile Include="Assets\Scripts\PhraseButton.cs" />
+    <Compile Include="Assets\Scripts\statsDislplay\StatsDisplayLaw.cs" />
     <Compile Include="Assets\Scripts\ButtonDisposer.cs" />
     <Compile Include="Assets\Ink\Demos\Basic Demo\Scripts\QuitGameOnKeypress.cs" />
+    <Compile Include="Assets\Scripts\statsDislplay\StatsDisplayWorkers.cs" />
     <Compile Include="Assets\Scripts\MovingPhraseButton.cs" />
     <Compile Include="Assets\Ink\Demos\Basic Demo\Scripts\BasicInkExample.cs" />
     <Compile Include="Assets\Scripts\DialogueManager.cs" />
     <Compile Include="Assets\Scripts\GameManager.cs" />
+    <Compile Include="Assets\Scripts\Audio.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\TextMesh Pro\Shaders\TMPro.cginc" />

@@ -34,6 +34,10 @@ public class DialogueManager : MonoBehaviour
     [Header("Окна")]
     [SerializeField] private GameObject dialoguePanel;
 
+    [Header("Экран Концовки")]
+    [SerializeField] private GameObject endGameScreen1;
+    [SerializeField] private GameObject endGameScreen2;
+
     private GameManager gameManager;
 
     // Новые переменные для простой логики "каждый второй" и отката
@@ -146,8 +150,11 @@ public class DialogueManager : MonoBehaviour
 
                     // 2. ПРОВЕРКА: Является ли кнопка технической/обучающей?
                     // Если на кнопке написано "ДАЛЕЕ", "ПРОПУСТИТЬ ОБУЧЕНИЕ" или "ИГРАТЬ" — это НЕ сюжетный выбор
-                    bool isTechnicalClick = upperPhrase.Contains("ДАЛЕЕ") ||
+
+                    // Теперь все проверяемые слова пишем СТРОГО КАПСОМ!
+                    bool isTechnicalClick = upperPhrase.Contains("ПРОДОЛЖИТЬ") ||
                                             upperPhrase.Contains("ПРОПУСТИТЬ") ||
+                                            upperPhrase.Contains("ДАЛЕЕ") ||
                                             upperPhrase.Contains("ИГРАТЬ");
 
                     if (!isTechnicalClick)
@@ -162,7 +169,7 @@ public class DialogueManager : MonoBehaviour
                     }
 
                     // 3. Запускаем мини-игру только на каждый второй РЕАЛЬНЫЙ выбор
-                    if (!isTechnicalClick && dialogueCounter % 2 == 0)
+                    if (!isTechnicalClick && dialogueCounter % 4 == 0)
                     {
                         Debug.Log($"[МЕХАНИКА] Шаг {dialogueCounter}. Запуск мини-игры.");
 
@@ -180,6 +187,50 @@ public class DialogueManager : MonoBehaviour
                     }
                 });
             }
+        }
+        else if (!story.canContinue)
+        {
+            ShowEndGameScreen1();
+        }
+    }
+
+    public void ShowEndGameScreen1()
+    {
+        // Проверяем, привязали ли мы объект в инспекторе, чтобы не поймать ошибку
+        if (endGameScreen1 != null)
+        {
+            endGameScreen1.SetActive(true); // ВКЛЮЧАЕМ визуальный объект финала
+            Debug.Log("[ФИНАЛ] Экран концовки активирован!");
+        }
+        else
+        {
+            Debug.LogError("Забыли перетащить endGameScreen в инспекторе!");
+        }
+
+        // (Опционально) Если во время финала нужно скрыть панель диалога:
+        if (dialoguePanel != null)
+        {
+            dialoguePanel.SetActive(false); // ВЫКЛЮЧАЕМ панель диалога
+        }
+    }
+
+    public void ShowEndGameScreen2()
+    {
+        // Проверяем, привязали ли мы объект в инспекторе, чтобы не поймать ошибку
+        if (endGameScreen2 != null)
+        {
+            endGameScreen2.SetActive(true); // ВКЛЮЧАЕМ визуальный объект финала
+            Debug.Log("[ФИНАЛ] Экран концовки активирован!");
+        }
+        else
+        {
+            Debug.LogError("Забыли перетащить endGameScreen в инспекторе!");
+        }
+
+        // (Опционально) Если во время финала нужно скрыть панель диалога:
+        if (endGameScreen1 != null)
+        {
+            endGameScreen1.SetActive(false); // ВЫКЛЮЧАЕМ панель диалога
         }
     }
 
